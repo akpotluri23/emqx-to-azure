@@ -60,7 +60,7 @@ variable "additional_tags" {
 variable "type" {
   description = "(Optional) Defined if the loadbalancer is private or public"
   type        = string
-  default     = "public"
+  default     = "private"
 }
 
 variable "frontend_subnet_id" {

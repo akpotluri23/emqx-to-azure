@@ -3,12 +3,6 @@ data "azurerm_resource_group" "azlb" {
   name = var.resource_group_name
 }
 
-data "azurerm_network_interface" "nics" {
-  count = length(module.network_interfaces.nic_private_ip_addresses)
-  name  = module.network_interfaces.nic_private_ip_addresses[count.index]
-  # Additional filters if needed...
-}
-
 locals {
   lb_name  = var.name != "" ? var.name : format("%s-lb", var.prefix)
   pip_name = var.pip_name != "" ? var.pip_name : format("%s-publicIP", var.prefix)
@@ -28,16 +22,17 @@ resource "azurerm_public_ip" "azlb" {
 }
 
 resource "azurerm_lb" "azlb_public" {
-  count               =  1
+  count               = var.type == "public" ? 1 : 0
   name                = local.lb_name
   resource_group_name = data.azurerm_resource_group.azlb.name
   location            = coalesce(var.location, data.azurerm_resource_group.azlb.location)
   sku                 = var.lb_sku
 
   frontend_ip_configuration {
-    name = var.frontend_name
-    private_ip_address = data.azurerm_network_interface.nics[*].ip_configuration[0].private_ip_address
-    private_ip_address_allocation = "Static"
+    name                 = var.frontend_name
+    public_ip_address_id = join("", azurerm_public_ip.azlb.*.id)
+    # private_ip_address            = var.frontend_private_ip_address
+    # private_ip_address_allocation = var.frontend_private_ip_address_allocation
   }
 
   tags = merge(var.additional_tags, {
@@ -45,6 +40,24 @@ resource "azurerm_lb" "azlb_public" {
   })
 }
 
+resource "azurerm_lb" "azlb_private" {
+  count               = var.type == "public" ? 0 : 1
+  name                = local.lb_name
+  resource_group_name = data.azurerm_resource_group.azlb.name
+  location            = coalesce(var.location, data.azurerm_resource_group.azlb.location)
+  sku                 = var.lb_sku
+
+  frontend_ip_configuration {
+    name                          = var.frontend_name
+    subnet_id                     = var.frontend_subnet_id
+    private_ip_address            = var.frontend_private_ip_address
+    private_ip_address_allocation = var.frontend_private_ip_address_allocation
+  }
+
+  tags = merge(var.additional_tags, {
+    source = "terraform"
+  })
+}
 
 resource "azurerm_lb_backend_address_pool" "azlb" {
   name            = "BackEndAddressPool"
@@ -95,4 +108,3 @@ resource "azurerm_lb_rule" "azlb" {
   idle_timeout_in_minutes        = 5
   probe_id                       = element(azurerm_lb_probe.azlb.*.id, count.index)
 }
-
