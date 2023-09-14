@@ -13,3 +13,6 @@ output "vnet_id" {
   value       = resource.azurerm_virtual_network.vnet.id
 
 }
+output "nic_private_ip_addresses" {
+  value = azurerm_network_interface.nic[*].ip_configuration[0].private_ip_address
+}

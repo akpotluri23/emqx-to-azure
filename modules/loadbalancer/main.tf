@@ -3,6 +3,12 @@ data "azurerm_resource_group" "azlb" {
   name = var.resource_group_name
 }
 
+data "azurerm_network_interface" "nics" {
+  count = length(module.network_interfaces.nic_private_ip_addresses)
+  name  = module.network_interfaces.nic_private_ip_addresses[count.index]
+  # Additional filters if needed...
+}
+
 locals {
   lb_name  = var.name != "" ? var.name : format("%s-lb", var.prefix)
   pip_name = var.pip_name != "" ? var.pip_name : format("%s-publicIP", var.prefix)
@@ -30,7 +36,7 @@ resource "azurerm_lb" "azlb_public" {
 
   frontend_ip_configuration {
     name = var.frontend_name
-    private_ip_address = azurerm_network_interface.nic.ip_configuration[0].private_ip_address
+    private_ip_address = data.azurerm_network_interface.nics[*].ip_configuration[0].private_ip_address
     private_ip_address_allocation = "Static"
   }
 
