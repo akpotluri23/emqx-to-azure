@@ -2,13 +2,15 @@
 
 # Azure regions with availability zone support
 # https://learn.microsoft.com/en-us/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support
-location        = "eastus2"
+location        = "southcentralus"
 namespace       = "emqx"
 additional_tags = {}
 
 ## vnet
 
-emqx_address_space = "10.0.0.0/16"
+vnet_name = "10.8.60.0VN"
+vnet_resource_group = "eogsharedvnetpeering"
+emqx_address_space = "10.8.60.0/24"
 
 ## vm
 
@@ -18,7 +20,7 @@ emqx_vm_size  = "Standard_F2s_v2"
 
 ## lb
 
-lb_type = "public"
+lb_type = "private"
 
 ## SSL/TLS
 

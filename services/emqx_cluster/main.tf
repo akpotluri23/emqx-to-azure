@@ -33,6 +33,8 @@ module "emqx_network" {
   source = "../../modules/network"
 
   vm_count            = var.emqx_vm_count
+  vnet_name           = var.vnet_name
+  vnet_resource_group = var.vnet_resource_group
   namespace           = var.namespace
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
@@ -40,6 +42,7 @@ module "emqx_network" {
   address_space       = var.emqx_address_space
   nsg_id              = module.emqx_network_security_group.nsg_id
   additional_tags     = var.additional_tags
+  lb_type             = var.lb_type
 }
 
 #######################################
@@ -60,31 +63,8 @@ module "self_signed_cert" {
 # emqx cluster modules
 #######################################
 
-module "emqx4_cluster" {
-  count = var.is_emqx5 ? 0 : 1
-
-  source = "../../modules/emqx4_cluster"
-
-  namespace           = var.namespace
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  nic_ids             = module.emqx_network.nic_ids
-  vm_count            = var.emqx_vm_count
-  vm_size             = var.emqx_vm_size
-  emqx_package        = var.emqx4_package
-  emqx_lic            = var.emqx_lic
-  additional_tags     = var.additional_tags
-  cookie              = var.emqx_cookie
-
-  # SSL/TLS
-  enable_ssl_two_way = var.enable_ssl_two_way
-  key                = module.self_signed_cert.key
-  cert               = module.self_signed_cert.cert
-  ca                 = module.self_signed_cert.ca
-}
-
 module "emqx5_cluster" {
-  count = var.is_emqx5 ? 1 : 0
+  count = 1
 
   source = "../../modules/emqx5_cluster"
 
@@ -118,8 +98,9 @@ module "emqx_lb" {
   type                = var.lb_type
   frontend_subnet_id  = var.lb_type == "private" ? module.emqx_network.subnet_ids[1] : ""
   frontend_name       = "lb-ip"
+  frontend_private_ip_address_allocation = "Static"
   vnet_id             = module.emqx_network.vnet_id
-  emqx_private_ips    = var.is_emqx5 ? module.emqx5_cluster[0].emqx_private_ips : module.emqx4_cluster[0].emqx_private_ips
+  emqx_private_ips    = module.emqx5_cluster[0].emqx_private_ips
   lb_sku              = "Standard"
   pip_sku             = "Standard"
   name                = "emqx-lb"

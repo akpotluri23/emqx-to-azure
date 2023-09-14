@@ -166,6 +166,18 @@ variable "lb_probe" {
   }
 }
 
+variable "vnet_name" {
+  description = "(Required) The virtual network name"
+  type        = string
+  default     = ""
+}
+
+variable "vnet_resource_group" {
+  description = "(Required) The virtual network resource group name"
+  type        = string
+  default     = ""
+}
+
 
 # SSL/TLS
 #
