@@ -9,8 +9,7 @@ locals {
 }
 
 data "azurerm_virtual_network" "existing_vnet" {
-  name                = local.vnet_name
-  resource_group_name = var.vnet_resource_group
+  id                = "/subscriptions/fc6d0a20-9ac5-4cb9-8f15-d025c81ee528/resourceGroups/eogsharedvnetpeering/providers/Microsoft.Network/virtualNetworks/10.8.60.0VN"
 }
 
 resource "azurerm_subnet" "sn" {
