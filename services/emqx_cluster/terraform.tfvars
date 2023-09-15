@@ -10,7 +10,7 @@ additional_tags = {}
 
 vnet_name = "10.8.60.0VN"
 vnet_resource_group = "eogsharedvnetpeering"
-emqx_address_space = "10.8.60.0/24"
+emqx_address_space = "10.8.60.0/16"
 
 ## vm
 
