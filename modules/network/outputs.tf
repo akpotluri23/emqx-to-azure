@@ -10,6 +10,6 @@ output "subnet_ids" {
 
 output "vnet_id" {
   description = "the id of virtual network"
-  value       = resource.azurerm_virtual_network.vnet.id
+  value       = data.azurerm_virtual_network.existing_vnet.id
 
 }

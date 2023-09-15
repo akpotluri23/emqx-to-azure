@@ -26,6 +26,20 @@ variable "nsg_id" {
   type = string
 }
 
+variable "vnet_name" {
+  type = string
+}
+
+variable "vnet_resource_group" {
+  type = string
+}
+
+
 variable "subnet_conf" {
   type = map(number)
 }
+
+variable "lb_type" {
+  type = string
+}
+
